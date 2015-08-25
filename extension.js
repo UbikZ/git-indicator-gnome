@@ -7,6 +7,7 @@ const PopupMenu = imports.ui.popupMenu;
 const PanelMenu = imports.ui.panelMenu;
 const Lang = imports.lang;
 const Me = imports.misc.extensionUtils.getCurrentExtension();
+const Mainloop = imports.mainloop;
 
 const COUNT_ITEMS = 10;
 const COUNT_MORE = 50;
@@ -29,7 +30,7 @@ Repository.prototype =
     this.box = new St.BoxLayout({style_class: 'popup-combobox-item'});
 
     /*this.box.add(iconState);
-    this.box.add(new St.Label({text: " "}));*/
+     this.box.add(new St.Label({text: " "}));*/
 
     let repositoryBox = new St.BoxLayout({style_class: cssClass});
     repositoryBox.add(new St.Label({text: text}));
@@ -61,8 +62,8 @@ GitIndicator.prototype =
       global.log('Can\'t init configuration for Git-Indicator');
     }
 
-    out.toString().split('\n').forEach(function(repository) {
-      repositories.push({ 'path': repository, 'perc' : 100})
+    out.toString().split('\n').forEach(function (repository) {
+      repositories.push({'path': repository, 'perc': 100})
     });
 
     PanelMenu.Button.prototype._init.call(this, 0.0);
@@ -72,6 +73,7 @@ GitIndicator.prototype =
     this.actor.add_style_class_name('panel-status-button');
     this._display();
     Main.panel.addToStatusArea('git-indicator', this);
+    Mainloop.timeout_add(1000, Lang.bind(this, this._refresh));
   },
 
   _onDestroy: function () {
@@ -81,7 +83,7 @@ GitIndicator.prototype =
   _display: function () {
     let that = this, countItem = 0;
 
-    repositories.forEach(function(repository) {
+    repositories.forEach(function (repository) {
       countItem++;
       if (countItem < COUNT_ITEMS) {
         //let gicon = Gio.icon_new_for_string(Me.path + "/images/git.png");
@@ -90,10 +92,10 @@ GitIndicator.prototype =
       }
     });
   },
-  _getState: function(percentage) {
+  _getState: function (percentage) {
     let cssClass = 'sync';
     let path = 'git.png';
-    percentage = percentage || 0;
+    percentage = percentage || 0;
     if (percentage <= 50) {
       cssClass = 'async-zero';
       path = 'git-attention.png'
@@ -105,9 +107,10 @@ GitIndicator.prototype =
     return [cssClass, new St.Icon({gicon: Gio.icon_new_for_string(Me.path + "/images/" + path), icon_size: 20})];
   },
   _refresh: function () {
-    // todo
+    global.log("test");
     this.menu.removeAll();
     this._display();
+    //Mainloop.timeout_add(1000, Lang.bind(this, this._refresh));
   },
   _displayInfo: function (repository) {
     // todo
