@@ -13,9 +13,6 @@ const COUNT_MORE = 50;
 
 let gitIndicator, repositories = [];
 
-function sortfunc(x, y) {
-  return y[0] - x[0];
-}
 
 function Repository() {
   this._init.apply(this, arguments);
@@ -25,19 +22,25 @@ Repository.prototype =
 {
   __proto__: PopupMenu.PopupBaseMenuItem.prototype,
 
-  _init: function (gicon, text, percentage, params) {
+  _init: function (state, text, percentage, params) {
     PopupMenu.PopupBaseMenuItem.prototype._init.call(this, params);
 
+    let [cssClass, iconState] = state;
     this.box = new St.BoxLayout({style_class: 'popup-combobox-item'});
 
-    if (gicon) {
-      this.icon = new St.Icon({gicon: gicon, style_class: 'popup-menu-icon'});
-      this.box.add(this.icon);
-    }
+    /*this.box.add(iconState);
+    this.box.add(new St.Label({text: " "}));*/
 
-    this.label = new St.Label({text: text});
-    this.box.add(this.label);
-    this.box.add(new St.Label({text: " - " + percentage + "%"}));
+    let repositoryBox = new St.BoxLayout({style_class: cssClass});
+    repositoryBox.add(new St.Label({text: text}));
+    this.box.add(repositoryBox);
+
+    this.box.add(new St.Label({text: " - "}));
+
+    let percentageBox = new St.BoxLayout({style_class: cssClass});
+    percentageBox.add(new St.Label({text: percentage + "%"}));
+    this.box.add(percentageBox);
+
     this.actor.add(this.box);
   }
 };
@@ -54,11 +57,13 @@ GitIndicator.prototype =
     let [result, out] = GLib.spawn_sync(Me.path + '/scripts', ['main.sh', '--init'], null, 0, null);
     let gicon = Gio.icon_new_for_string(Me.path + "/images/git.png");
 
-    repositories = out.toString().split('\n');
-
     if (!result) {
       global.log('Can\'t init configuration for Git-Indicator');
     }
+
+    out.toString().split('\n').forEach(function(repository) {
+      repositories.push({ 'path': repository, 'perc' : 100})
+    });
 
     PanelMenu.Button.prototype._init.call(this, 0.0);
     this.connect('destroy', Lang.bind(this, this._onDestroy));
@@ -80,12 +85,27 @@ GitIndicator.prototype =
       countItem++;
       if (countItem < COUNT_ITEMS) {
         //let gicon = Gio.icon_new_for_string(Me.path + "/images/git.png");
-        let repositoryItem = new Repository(undefined, repository, 100, {});
+        let repositoryItem = new Repository(that._getState(repository.perc), repository.path, repository.perc, {});
         that.menu.addMenuItem(repositoryItem);
       }
     });
   },
+  _getState: function(percentage) {
+    let cssClass = 'sync';
+    let path = 'git.png';
+    percentage = percentage || 0;
+    if (percentage <= 50) {
+      cssClass = 'async-zero';
+      path = 'git-attention.png'
+    } else if (percentage != 100) {
+      cssClass = 'async';
+      path = 'git-attention.png'
+    }
+
+    return [cssClass, new St.Icon({gicon: Gio.icon_new_for_string(Me.path + "/images/" + path), icon_size: 20})];
+  },
   _refresh: function () {
+    // todo
     this.menu.removeAll();
     this._display();
   },
