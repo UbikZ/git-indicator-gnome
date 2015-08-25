@@ -1,3 +1,6 @@
+.git-status-default {
+  background: url('./images/git.png');
+}
 
 .helloworld-label {
     font-size: 36px;
