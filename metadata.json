@@ -1,1 +1,8 @@
-{"shell-version": ["3.14.4"], "uuid": "Git_Indicator@ubikz", "name": "Git Indicator", "description": "Git Indicator to check sync repositories"}
+{
+  "shell-version": [
+    "3.14.4"
+  ],
+  "uuid": "Git_Indicator@ubikz",
+  "name": "Git Indicator",
+  "description": "Git Indicator to check sync repositories"
+}
