@@ -25,7 +25,7 @@ Repository.prototype =
 {
   __proto__: PopupMenu.PopupBaseMenuItem.prototype,
 
-  _init: function (gicon, text, params) {
+  _init: function (gicon, text, percentage, params) {
     PopupMenu.PopupBaseMenuItem.prototype._init.call(this, params);
 
     this.box = new St.BoxLayout({style_class: 'popup-combobox-item'});
@@ -37,6 +37,7 @@ Repository.prototype =
 
     this.label = new St.Label({text: text});
     this.box.add(this.label);
+    this.box.add(new St.Label({text: " - " + percentage + "%"}));
     this.actor.add(this.box);
   }
 };
@@ -79,7 +80,7 @@ GitIndicator.prototype =
       countItem++;
       if (countItem < COUNT_ITEMS) {
         //let gicon = Gio.icon_new_for_string(Me.path + "/images/git.png");
-        let repositoryItem = new Repository(undefined, repository, {});
+        let repositoryItem = new Repository(undefined, repository, 100, {});
         that.menu.addMenuItem(repositoryItem);
       }
     });
