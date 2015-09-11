@@ -39,13 +39,13 @@ function fetch {
 function gitDiffCountCommits {
     REPOSITORY="$1"
     SRC_BRANCH="master"
+    DEST_BRANCH="master"
 
     checkRepository "$REPOSITORY"
-    [ "$2" == "" ] && SRC_BRANCH="$2"
-    DEST_BRANCH="master"
-    [ "$3" == "" ] && DEST_BRANCH="$3"
-    cd "$1" && \
-    (git fetch >/dev/null || echo -1) && (git rev-list $2..origin/$3 --count 2>/dev/null || echo -1) && cd "$BASE"
+    [ "$2" != "" ] && SRC_BRANCH="$2"
+    [ "$3" != "" ] && DEST_BRANCH="$3"
+
+    cd "$REPOSITORY" && (git rev-list $SRC_BRANCH..origin/$DEST_BRANCH --count 2>/dev/null || echo -1) && cd "$BASE"
 }
 
 function gitCountCommits {

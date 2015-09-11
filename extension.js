@@ -93,7 +93,7 @@ GitIndicator.prototype =
     });
   },
   _getState: function (percentage) {
-    let cssClass = 'sync';
+    let cssClass = 'sync';  
     let path = 'git.png';
     percentage = percentage || 0;
     if (percentage <= 50) {
@@ -107,10 +107,26 @@ GitIndicator.prototype =
     return [cssClass, new St.Icon({gicon: Gio.icon_new_for_string(Me.path + "/images/" + path), icon_size: 20})];
   },
   _refresh: function () {
-    global.log("test");
     this.menu.removeAll();
+    this._update();
     this._display();
-    //Mainloop.timeout_add(1000, Lang.bind(this, this._refresh));
+    //Mainloop.timeout_add(5000, Lang.bind(this, this._refresh));
+  },
+  _fetch: function() {
+    repositories.forEach(function(repository) {
+      GLib.spawn_command_line_async('bash ' + Me.path + '/scripts/main.sh --fetch ' + repository.path);
+    });
+    //Mainloop.timeout_add(60000, Lang.bind(this, this._fetch))
+  },
+  _update: function() {
+    repositories.forEach(function(repository) {
+      let [resultCount, count] = GLib.spawn_sync(Me.path + '/scripts', ['main.sh', '--count', repository.path], null, 0, null),
+        [resultDiff, diff] = GLib.spawn_sync(Me.path + '/scripts', ['main.sh', '--diff', repository.path], null, 0, null),
+        countCommits = parseInt(count.toString().replace(/\n|\r/g, '')),
+        countDiff = parseInt(diff.toString());
+        global.log(countCommits + ' - ' + countDiff);
+        repository.perc = ((countCommits - countDiff) * 100 / countCommits).toFixed(0);
+    });
   },
   _displayInfo: function (repository) {
     // todo

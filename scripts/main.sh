@@ -13,6 +13,14 @@ while [ ! -z $1 ]; do
             initConfiguration $2
             exit 1
             ;;
+        --count)
+            gitCountCommits $2
+            exit 1
+            ;;
+        --diff)
+            gitDiffCountCommits $2
+            exit 1
+            ;;
         *)
             exit -1
             ;;
