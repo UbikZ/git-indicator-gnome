@@ -21,6 +21,10 @@ while [ ! -z $1 ]; do
             gitDiffCountCommits $2
             exit 1
             ;;
+        --fetch)
+            fetch $2
+            exit 1
+            ;;
         *)
             exit -1
             ;;

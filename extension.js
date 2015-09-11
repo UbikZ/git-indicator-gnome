@@ -9,7 +9,7 @@ const Lang = imports.lang;
 const Me = imports.misc.extensionUtils.getCurrentExtension();
 const Mainloop = imports.mainloop;
 
-const COUNT_ITEMS = 10;
+const COUNT_ITEMS = 20;
 const COUNT_MORE = 50;
 
 let gitIndicator, repositories = [];
@@ -63,7 +63,9 @@ GitIndicator.prototype =
     }
 
     out.toString().split('\n').forEach(function (repository) {
-      repositories.push({'path': repository, 'perc': 100})
+      if (repository) {
+        repositories.push({'path': repository, 'perc': 100})
+      }
     });
 
     PanelMenu.Button.prototype._init.call(this, 0.0);
@@ -72,8 +74,9 @@ GitIndicator.prototype =
     this.actor.add_actor(this._iconActor);
     this.actor.add_style_class_name('panel-status-button');
     this._display();
+    this._fetch();
     Main.panel.addToStatusArea('git-indicator', this);
-    Mainloop.timeout_add(1000, Lang.bind(this, this._refresh));
+    Mainloop.timeout_add(5000, Lang.bind(this, this._refresh));
   },
 
   _onDestroy: function () {
@@ -110,13 +113,14 @@ GitIndicator.prototype =
     this.menu.removeAll();
     this._update();
     this._display();
-    //Mainloop.timeout_add(5000, Lang.bind(this, this._refresh));
+    Mainloop.timeout_add(5000, Lang.bind(this, this._refresh));
   },
   _fetch: function() {
     repositories.forEach(function(repository) {
+      //global.log('Fetching ' + repository.path);
       GLib.spawn_command_line_async('bash ' + Me.path + '/scripts/main.sh --fetch ' + repository.path);
     });
-    //Mainloop.timeout_add(60000, Lang.bind(this, this._fetch))
+    Mainloop.timeout_add(60000, Lang.bind(this, this._fetch))
   },
   _update: function() {
     repositories.forEach(function(repository) {
@@ -124,8 +128,8 @@ GitIndicator.prototype =
         [resultDiff, diff] = GLib.spawn_sync(Me.path + '/scripts', ['main.sh', '--diff', repository.path], null, 0, null),
         countCommits = parseInt(count.toString().replace(/\n|\r/g, '')),
         countDiff = parseInt(diff.toString());
-        global.log(countCommits + ' - ' + countDiff);
         repository.perc = ((countCommits - countDiff) * 100 / countCommits).toFixed(0);
+        //global.log('Repository ' + repository.path + ' : ' + repository.perc + '%');
     });
   },
   _displayInfo: function (repository) {
